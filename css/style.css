@@ -1,7 +1,11 @@
 /*style sheet for d3 lab*/
 
 .states :hover {
-  fill: red;
+  fill: blue;
+}
+
+.states {
+	fill: #A8E5E8;
 }
 
 .state-borders {
