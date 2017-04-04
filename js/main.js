@@ -7,7 +7,7 @@ window.onload = setMap();
 function setMap(){
     //map frame dimensions
     var width = 960,
-        height = 460;
+        height = 600;
 
     //create new svg container for the map
     var map = d3.select("body")
@@ -17,12 +17,7 @@ function setMap(){
         .attr("height", height);
 
     //create Albers equal area conic projection centered on France
-    var projection = d3.geoAlbers()
-        .center([0, 46.2])
-        .rotate([-2, 0, 0])
-        .parallels([43, 62])
-        .scale(2500)
-        .translate([width / 2, height / 2]);
+    var projection = d3.geoAlbersUsa();
 
     var path = d3.geoPath()
         .projection(projection);
