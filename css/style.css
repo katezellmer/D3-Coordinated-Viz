@@ -1,12 +1,21 @@
 /*style sheet for d3 lab*/
 
-.states :hover {
-  fill: blue;
+.class :hover {
+  fill: yellow;
 }
 
-.states {
-	fill: #A8E5E8;
+.class {
+	fill: #FFF;
+    stroke: #CCC;
+    stroke-width: 2px;
 }
+
+.counties {
+    fill: #e2e0e0;
+    stroke: #CCC;
+    stroke-width: 2px;
+}
+
 
 .state-borders {
   fill: none;

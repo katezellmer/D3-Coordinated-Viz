@@ -1,31 +1,8 @@
-// main js file
-
-    var svg = d3.select("svg");
-    var path = d3.geoPath();
-
-    d3.json("https://d3js.org/us-10m.v1.json", function(error, us) {
-
-      if (error) throw error;
-      console.log(us);
-
-      svg.append("g")
-        .attr("class", "states")
-        .selectAll("path")
-        .data(topojson.feature(us, us.objects.states).features)
-        .enter().append("path")
-        .attr("d", path);
-
-        console.log(us.objects.states);
-
-      svg.append("path")
-          .attr("class", "state-borders")
-          .attr("d", path(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; })));
-    });
-//begin script when window loads
-/*window.onload = setMap();
+window.onload = setMap();
 
 //set up choropleth map
 function setMap(){
+
     //map frame dimensions
     var width = 960,
         height = 600;
@@ -46,27 +23,22 @@ function setMap(){
     //use d3.queue to parallelize asynchronous data loading
     d3.queue()
         .defer(d3.csv, "data/WomenInGovernment.csv") //load attributes from csv
-        .defer(d3.json, "data/UnitedStates.topojson") //load spatial data for choropleth map
-        .await(callback); //send data to callback function
+        .defer(d3.json, "data/UnitedStates.topojson") //load background spatial data
+        .await(callback);
 
-//still debugging this, something is off, and I've checked to make sure I have the correct
-//objects and properties names according to the topojson files
     function callback(error, csvData, usa){
 
-        var states = topojson.feature(usa, usa.objects.layer1).features;
+        var states = topojson.feature(usa, usa.objects.UnitedStates).features;
 
         var regions = map.selectAll(".regions")
             .data(states)
             .enter()
             .append("path")
             .attr("class", function(d){
-                return "regions " + d.properties.adm1_code;
+                return d.properties.name;
             })
             .attr("d", path);
 
-        console.log(error);
-        console.log(csvData);
-        console.log(usa);
+        console.log(states);
     };
-
-};*/
+};
