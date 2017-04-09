@@ -89,7 +89,8 @@ function setChart(csvData, colorScale){
         })
         .attr("width", chartInnerWidth / csvData.length - 1)
         .on("mouseover", highlight)
-        .on("mouseout", dehighlight);
+        .on("mouseout", dehighlight)
+        .on("mousemove", moveLabel);
 
     var desc = bars.append("desc")
         .text('{"stroke": "none", "stroke-width": "0px"}');
@@ -239,9 +240,23 @@ function dehighlight(props){
 
 //function to move info label with mouse
 function moveLabel(){
+
+    //get width of label
+    var labelWidth = d3.select(".infolabel")
+        .node()
+        .getBoundingClientRect()
+        .width;
+
     //use coordinates of mousemove event to set label coordinates
-    var x = d3.event.clientX + 10,
-        y = d3.event.clientY - 75;
+    var x1 = d3.event.clientX + 10,
+        y1 = d3.event.clientY - 75,
+        x2 = d3.event.clientX - labelWidth - 10,
+        y2 = d3.event.clientY + 25;
+
+    //horizontal label coordinate, testing for overflow
+    var x = d3.event.clientX > window.innerWidth - labelWidth - 20 ? x2 : x1; 
+    //vertical label coordinate, testing for overflow
+    var y = d3.event.clientY < 75 ? y2 : y1; 
 
     d3.select(".infolabel")
         .style("left", x + "px")
@@ -310,7 +325,8 @@ function setEnumerationUnits(states, map, path, colorScale) {
             })
             .on("mouseout", function(d){
                 dehighlight(d.properties);
-            });
+            })
+            .on("mousemove", moveLabel);
 
     var desc = regions.append("desc")
         .text('{"stroke": "#000", "stroke-width": "0.5px"}');

@@ -5,9 +5,11 @@
     height: 50px;
     min-width: 100px;
     color: #fff;
-    background-color: #000;
+    background-color: #133759;
     border: solid thin #fff;
     padding: 5px 10px;
+    top: -75px;
+    font: sans-serif;
 }
 
 .infolabel h1 {
@@ -15,6 +17,11 @@
     padding: 0;
     display: inline-block;
     line-height: 1em;
+    font-family: sans-serif;
+}
+
+.infolabel body {
+	font-family: sans-serif;
 }
 
 .map {
