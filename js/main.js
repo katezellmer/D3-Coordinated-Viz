@@ -58,16 +58,11 @@ function setMap(){
         setEnumerationUnits(states, map, path, colorScale);
 
         setChart(csvData, colorScale);
-
-        
-
     };
 };
 
 //function to create coordinated bar chart
 function setChart(csvData, colorScale){
-    
-
     //create a second svg element to hold the bar chart
     var chart = d3.select("body")
         .append("svg")
@@ -92,8 +87,12 @@ function setChart(csvData, colorScale){
         .attr("class", function(d){
             return "bar " + d.name;
         })
-        .attr("width", chartInnerWidth / csvData.length - 1);
+        .attr("width", chartInnerWidth / csvData.length - 1)
+        .on("mouseover", highlight)
+        .on("mouseout", dehighlight);
 
+    var desc = bars.append("desc")
+        .text('{"stroke": "none", "stroke-width": "0px"}');
 
     //create a text element for the chart title
     var chartTitle = chart.append("text")
@@ -208,9 +207,63 @@ function changeAttribute(attribute, csvData){
 //function to highlight enumeration units and bars
 function highlight(props){
     //change stroke
-    var selected = d3.selectAll("." + props.adm1_code)
-        .style("stroke", "blue")
+    var selected = d3.selectAll("." + props.name)
+        .style("stroke", "indigo")
         .style("stroke-width", "2");
+
+    setLabel(props);
+};
+
+function dehighlight(props){
+    var selected = d3.selectAll("." + props.name)
+        .style("stroke", function(){
+            return getStyle(this, "stroke")
+        })
+        .style("stroke-width", function(){
+            return getStyle(this, "stroke-width")
+        });
+
+    function getStyle(element, styleName){
+        var styleText = d3.select(element)
+            .select("desc")
+            .text();
+
+        var styleObject = JSON.parse(styleText);
+
+        return styleObject[styleName];
+    };
+
+    d3.select(".infolabel")
+        .remove()
+};
+
+//function to move info label with mouse
+function moveLabel(){
+    //use coordinates of mousemove event to set label coordinates
+    var x = d3.event.clientX + 10,
+        y = d3.event.clientY - 75;
+
+    d3.select(".infolabel")
+        .style("left", x + "px")
+        .style("top", y + "px");
+};
+
+//function to create dynamic label
+function setLabel(props){
+    //label content
+    var labelAttribute = "<h1>" + props[expressed] +
+        "</h1><b>" + expressed + "</b>";
+
+    //create info label div
+    var infolabel = d3.select("body")
+        .append("div")
+        .attr("class", "infolabel")
+        .attr("id", props.name + "_label")
+        .html(labelAttribute);
+
+    var regionName = infolabel.append("div")
+        .attr("class", "labelname")
+        .html(props.name);
 };
 
 //function to create color scale generator
@@ -241,7 +294,7 @@ function makeColorScale(data){
 };
 
 function setEnumerationUnits(states, map, path, colorScale) {
-    var regions = map.selectAll(".regions")
+    var regions = map.selectAll(".states")
             .data(states)
             .enter()
             .append("path")
@@ -251,7 +304,16 @@ function setEnumerationUnits(states, map, path, colorScale) {
             .attr("d", path)
             .style("fill", function(d){
                 return colorScale(d.properties[expressed], colorScale);
-        });
+            })
+            .on("mouseover", function(d){
+                highlight(d.properties);
+            })
+            .on("mouseout", function(d){
+                dehighlight(d.properties);
+            });
+
+    var desc = regions.append("desc")
+        .text('{"stroke": "#000", "stroke-width": "0.5px"}');
 }
 
 //function to test for data value and return color
