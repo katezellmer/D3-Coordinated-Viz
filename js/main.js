@@ -212,27 +212,14 @@ function highlight(props){
         .style("stroke", "indigo")
         .style("stroke-width", "2");
 
+    console.log(selected);
     setLabel(props);
 };
 
 function dehighlight(props){
     var selected = d3.selectAll("." + props.name)
-        .style("stroke", function(){
-            return getStyle(this, "stroke")
-        })
-        .style("stroke-width", function(){
-            return getStyle(this, "stroke-width")
-        });
-
-    function getStyle(element, styleName){
-        var styleText = d3.select(element)
-            .select("desc")
-            .text();
-
-        var styleObject = JSON.parse(styleText);
-
-        return styleObject[styleName];
-    };
+        .style("stroke", "white")
+        .style("stroke-width", "1");
 
     d3.select(".infolabel")
         .remove()
