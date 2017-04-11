@@ -1,15 +1,31 @@
 /*style sheet for d3 lab*/
+h1 {
+	font-family: 'Josefin Sans', sans-serif;
+	text-align: center;
+	line-height: 5px;
+	padding-top: 1px;
+	color: #810f7c;
+}
 
+h2 {
+	font-family: 'Josefin Sans', sans-serif;
+	text-align: center;
+	line-height: 5px;
+}
+p {
+	font-family: 'Raleway', sans-serif;
+	color: #133759;
+}
 .infolabel {
     position: absolute;
     height: 50px;
     min-width: 100px;
     color: #fff;
     background-color: #133759;
-    border: solid thin #fff;
     padding: 5px 10px;
+    opacity: .95;
     top: -75px;
-    font: sans-serif;
+    font-family: 'Josefin Sans', sans-serif;
 }
 
 .infolabel h1 {
@@ -18,6 +34,14 @@
     display: inline-block;
     line-height: 1em;
     font-family: sans-serif;
+}
+
+.infolabel h3 {
+    margin: 0 20px 0 0;
+    padding: 0;
+    display: inline-block;
+    line-height: 1em;
+    font-family: 'Raleway', sans-serif;
 }
 
 .infolabel body {
@@ -30,15 +54,15 @@
 }
 
 .bars {
-	color: blue;
+	color: yellow;
 }
 
 .dropdown {
     position: absolute;
-    top: 30px;
+    top: 193px;
     left: 40px;
     z-index: 10;
-    font-family: sans-serif;
+    font-family: 'Raleway', sans-serif;
     font-size: 1em;
     padding: 2px;
     border: 1px solid #999;
@@ -55,7 +79,7 @@ option {
 }
 
 .chartTitle {
-    font-family: sans-serif;
+    font-family: 'Josefin Sans', sans-serif;
     font-size: 1.5em;
     font-weight: bold;
 }

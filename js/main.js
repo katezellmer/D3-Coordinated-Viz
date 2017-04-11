@@ -1,5 +1,6 @@
-var attrArray = ["House", "StateLegislature", "Senators", "Managerial", "LaborForce"];
+var attrArray = ["Women_In_House_Of_Representatives_(%)", "Women_In_State_Legislature_(%)", "Women_In_Senate_(%)", "Women_Holding_State_Wide_Elected_Office_2017(#)", "Women_Who_Voted_In_2016_Election(%)"];
 var expressed = attrArray[0];
+var map;
 
 //chart frame dimensions
 var chartWidth = window.innerWidth * 0.425,
@@ -24,7 +25,7 @@ function setMap(){
         height = 450;
 
     //create new svg container for the map
-    var map = d3.select("body")
+    map = d3.select("body")
         .append("svg")
         .attr("class", "map")
         .attr("width", width)
@@ -32,16 +33,15 @@ function setMap(){
 
     //create Albers equal area conic projection centered on France
     var projection = d3.geoAlbersUsa()
-        .scale(800);
-
-    projection.translate([width/2, height/2]);
+        .scale(800)
+        .translate([width/2, height/2]);
 
     var path = d3.geoPath()
         .projection(projection);
 
     //use d3.queue to parallelize asynchronous data loading
     d3.queue()
-        .defer(d3.csv, "data/WomenInGovernment.csv") //load attributes from csv
+        .defer(d3.csv, "data/WomenInGovernment2.csv") //load attributes from csv
         .defer(d3.json, "data/UnitedStates.topojson") //load background spatial data
         .await(callback);
 
@@ -53,7 +53,7 @@ function setMap(){
 
         createDropdown(csvData);
 
-        colorScale = makeColorScale(csvData);
+        colorScale = makeColorScale(csvData, expressed);
 
         setEnumerationUnits(states, map, path, colorScale);
 
@@ -70,19 +70,12 @@ function setChart(csvData, colorScale){
         .attr("height", chartHeight)
         .attr("class", "chart");
 
-    //create a rectangle for chart background fill
-    var chartBackground = chart.append("rect")
-        .attr("class", "chartBackground")
-        .attr("width", chartWidth)
-        .attr("height", chartHeight)
-        .attr("transform", translate);
-
     var bars = chart.selectAll(".bar")
         .data(csvData)
         .enter()
         .append("rect")
         .sort(function(a, b){
-            return b[expressed]-a[expressed]
+            return a[expressed]-b[expressed]
         })
         .attr("class", function(d){
             return "bar " + d.name;
@@ -97,10 +90,9 @@ function setChart(csvData, colorScale){
 
     //create a text element for the chart title
     var chartTitle = chart.append("text")
-        .attr("x", 90)
+        .attr("x", 50)
         .attr("y", 50)
-        .attr("class", "chartTitle")
-        .text("Number of Variable " + expressed[3] + " in each state");
+        .attr("class", "chartTitle");
 
     //create vertical axis generator
     var yAxis = d3.axisLeft()
@@ -140,8 +132,11 @@ function updateChart(bars, n, colorScale){
             return choropleth(d, colorScale);
         });
 
+
+    var newExpressed = expressed.replace(/_/g, " ");
+
     var chartTitle = d3.select(".chartTitle")
-        .text("Number of Variable " + expressed[3] + " in each region");
+        .text(newExpressed);
 };
 
 //function to create a dropdown menu for attribute selection
@@ -160,12 +155,18 @@ function createDropdown(csvData){
         .attr("disabled", "true")
         .text("Select Attribute");
 
+    var newArray = new Array();
+
+    for (var i = 0; i < attrArray.length; i++) {
+        newArray[i] = attrArray[i].replace(/_/g, " ");
+    }
+
     //add attribute name options
     var attrOptions = dropdown.selectAll("attrOptions")
-        .data(attrArray)
+        .data(newArray)
         .enter()
         .append("option")
-        .attr("value", function(d){ return d })
+        .attr("value", function(d){ return d.replace(/ /g, "_"); })
         .text(function(d){ return d });
 };
 
@@ -173,10 +174,9 @@ function createDropdown(csvData){
 function changeAttribute(attribute, csvData){
     //change the expressed attribute
     expressed = attribute;
-    //console.log(expressed);
 
     //recreate the color scale
-    var colorScale = makeColorScale(csvData);
+    var colorScale = makeColorScale(csvData, attribute);
 
     //recolor enumeration units
     var states = d3.selectAll(".states")
@@ -184,15 +184,18 @@ function changeAttribute(attribute, csvData){
         .duration(1000)
         .style("fill", function(d){
 
-            return choropleth(d.properties, colorScale)
+        return choropleth(d.properties, colorScale)
     });
 
     //re-sort, resize, and recolor bars
     //in changeAttribute()...Example 1.5 line 15...re-sort bars
+
     var bars = d3.selectAll(".bar")
         //re-sort bars
         .sort(function(a, b){
-            return b[expressed] - a[expressed];
+            if (expressed[a] == "NAN") expressed[a] = 0;
+            if (expressed[b] == "NAN") expressed[b] = 0;
+            return a[expressed] - b[expressed];
         })
         .transition()
         .delay(function(d, i){
@@ -212,7 +215,6 @@ function highlight(props){
         .style("stroke", "indigo")
         .style("stroke-width", "2");
 
-    console.log(selected);
     setLabel(props);
 };
 
@@ -256,20 +258,23 @@ function setLabel(props){
     var labelAttribute = "<h1>" + props[expressed] +
         "</h1><b>" + expressed + "</b>";
 
+    var currName = props.name.replace(/_/g, " ");
+    var currAttribute = labelAttribute.replace(/_/g, " ");
+    
     //create info label div
     var infolabel = d3.select("body")
         .append("div")
         .attr("class", "infolabel")
-        .attr("id", props.name + "_label")
-        .html(labelAttribute);
+        .attr("id", currName + "_label")
+        .html(currAttribute);
 
     var regionName = infolabel.append("div")
         .attr("class", "labelname")
-        .html(props.name);
+        .html(currName);
 };
 
 //function to create color scale generator
-function makeColorScale(data){
+function makeColorScale(data, expressed){
     var colorClasses = [
         "#edf8fb",
         "#b3cde3",
@@ -282,15 +287,32 @@ function makeColorScale(data){
     var colorScale = d3.scaleQuantile()
         .range(colorClasses);
 
-    //build array of all values of the expressed attribute
-    var domainArray = [];
-    for (var i=0; i<data.length; i++){
-        var val = parseFloat(data[i][expressed]);
-        domainArray.push(val);
-    };
+    if (expressed == "Women_In_Senate_(%)" || 
+        expressed == "Women_Holding_State_Wide_Elected_Office_2017_(#)") {
 
-    //assign array of expressed values as scale domain
-    colorScale.domain(domainArray);
+        //build two-value array of minimum and maximum expressed attribute values
+        var minmax = [
+            d3.min(data, function(d) { return parseFloat(d[expressed]); }),
+            d3.max(data, function(d) { return parseFloat(d[expressed]); })
+        ];
+        //assign two-value array as scale domain
+        colorScale.domain(minmax);
+    }
+
+    else {
+        //build array of all values of the expressed attribute
+        var domainArray = [];
+        for (var i=0; i<data.length; i++){
+            var val = parseFloat(data[i][expressed]);
+            domainArray.push(val);
+        };
+
+        //assign array of expressed values as scale domain
+        colorScale.domain(domainArray);
+    }
+    
+    
+
 
     return colorScale;
 };
@@ -332,13 +354,11 @@ function choropleth(props, colorScale){
 };
 
 function joinData(states, csvData){
-    //variables for data join
-
     //loop through csv to assign each set of csv attribute values to geojson region
     for (var i=0; i<csvData.length; i++){
         var csvState = csvData[i]; //the current region
         var csvKey = csvState.name; //the CSV primary key
-
+        
         //loop through geojson regions to find correct region
         for (var a=0; a<states.length; a++){
 
@@ -347,7 +367,6 @@ function joinData(states, csvData){
 
             //where primary keys match, transfer csv data to geojson properties object
             if (geojsonKey == csvKey){
-
                 //assign all attributes and values
                 attrArray.forEach(function(attr){
                     var val = parseFloat(csvState[attr]); //get csv attribute value
